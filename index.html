@@ -207,6 +207,12 @@
       align-items: center; /* Added for centering content */
       justify-content: center; /* Added for centering content */
     }
+    
+    /* Desktop adjustments for Long-Form Videos: Make them wider */
+    .cards:not(.shorts-cards) li { /* Selects only long-form videos */
+        width: 600px; /* Increased width for long-form videos on desktop */
+        padding-bottom: calc(600px * 9 / 16); /* Maintain 16:9 aspect ratio */
+    }
 
     .shorts-cards li {
       width: 250px; /* Adjusted width for shorts */
@@ -224,8 +230,16 @@
         overflow: hidden;
     }
 
-    .custom-player-wrapper iframe {
-        display: block; /* Important for preventing extra space */
+    .youtube-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Make iframe transparent to show controls on top */
+        opacity: 1; /* Keep it visible for interaction, controls overlay */
+        z-index: 1; /* Ensure iframe is below controls but visible */
+        border: none;
     }
 
     .player-controls {
@@ -244,6 +258,34 @@
         transition: opacity 0.3s ease;
         z-index: 5; /* Above the iframe */
     }
+    /* Add a play overlay for initial click if player is hidden or for better UX */
+    .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10; /* Above controls too */
+        cursor: pointer;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+    .play-overlay i {
+        font-size: 4em;
+        color: rgba(255, 255, 255, 0.8);
+        text-shadow: 0 0 10px cyan;
+    }
+    /* Hide overlay when player is active/playing */
+    .custom-player-wrapper.playing .play-overlay,
+    .custom-player-wrapper.buffered .play-overlay {
+        opacity: 0;
+        pointer-events: none; /* Disable clicks on overlay */
+    }
+
 
     .custom-player-wrapper:hover .player-controls {
         opacity: 1;
@@ -321,16 +363,17 @@
       box-shadow: 0 0 30px cyan;
     }
 
+    /* Adjusted translateX for different video widths */
     .cards li.left {
       opacity: 0.6;
-      transform: translateX(-320px) scale(0.8); /* Adjusted for larger videos */
+      transform: translateX(-500px) scale(0.8); /* Adjusted for larger long videos */
       z-index: 2;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
     }
 
     .cards li.right {
       opacity: 0.6;
-      transform: translateX(470px) scale(0.8); /* Adjusted for larger videos */
+      transform: translateX(500px) scale(0.8); /* Adjusted for larger long videos */
       z-index: 2;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
     }
@@ -428,26 +471,24 @@
       .shorts-cards {
         min-height: 250px; /* Adjusted for smaller screens */
       }
+
+      /* Mobile adjustments for all videos: Full width, maintain aspect ratio */
       .cards li {
-        width: 100%; /* Full width on smaller screens */
-        padding-bottom: calc(100% * 9 / 16);
+        width: 90%; /* On mobile, videos take up 90% width */
+        padding-bottom: calc(90% * 9 / 16); /* 16:9 for long form */
       }
       .shorts-cards li {
-        width: 100%; /* Full width on smaller screens */
-        padding-bottom: calc(100% * 16 / 9);
+        padding-bottom: calc(90% * 16 / 9); /* 9:16 for shorts */
       }
-      .cards li.left {
-        transform: translateX(-110%) scale(0.8); /* Adjusted for smaller screens */
+      
+      /* Mobile translateX adjustments for cards to keep them visible */
+      .cards li.left, .shorts-cards li.left {
+        transform: translateX(-100%) scale(0.8); 
       }
-      .shorts-cards li.left {
-        transform: translateX(-110%) scale(0.8); /* Adjusted for smaller screens */
+      .cards li.right, .shorts-cards li.right {
+        transform: translateX(100%) scale(0.8);
       }
-      .cards li.right {
-        transform: translateX(110%) scale(0.8); /* Adjusted for smaller screens */
-      }
-      .shorts-cards li.right {
-        transform: translateX(110%) scale(0.8); /* Adjusted for smaller screens */
-      }
+
       .nav-buttons button {
         padding: 10px 18px;
         font-size: 0.8rem;
@@ -501,13 +542,11 @@
   <script>
     // --- YouTube Iframe Player API ko load karna ---
     var tag = document.createElement('script');
-    // Sahi YouTube API URL
     tag.src = "https://www.youtube.com/iframe_api"; 
     var firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     // --- Video Data (EASIER TO EDIT) ---
-    // Bas URLs aur Headings ko badal do!
     const longformVideosData = [
       { id: "eZqL2P5_4a4", heading: "Talking Ahead: Cinematic Intro (Sci-Fi)" },
       { id: "M7lc1UVf-VE", heading: "Product Review: Tech Gadget Showcase" },
@@ -579,10 +618,10 @@
             this.container = document.getElementById(containerId);
             this.videoId = videoId;
             this.isShorts = isShorts;
-            this.player = null; // YouTube Player object
-            this.playerState = -1; // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: buffering, 5: cued
-            this.interval = null; // For progress bar updates
-            this.volumeBeforeMute = 100; // Mute se pehle ka volume
+            this.player = null; 
+            this.playerState = -1; 
+            this.interval = null; 
+            this.volumeBeforeMute = 100; 
 
             this.createPlayerHTML();
             this.getControlsElements();
@@ -592,6 +631,7 @@
         createPlayerHTML() {
             this.container.innerHTML = `
                 <div id="youtube-player-${this.container.id}" class="youtube-iframe"></div>
+                <div class="play-overlay"><i class="fas fa-play"></i></div>
                 <div class="player-controls">
                     <button class="play-pause-btn"><i class="fas fa-play"></i></button>
                     <div class="progress-bar">
@@ -605,6 +645,9 @@
         }
 
         getControlsElements() {
+            this.youtubeIframeDiv = this.container.querySelector('.youtube-iframe');
+            this.playOverlay = this.container.querySelector('.play-overlay');
+            this.playerControls = this.container.querySelector('.player-controls');
             this.playPauseBtn = this.container.querySelector('.play-pause-btn');
             this.progressBar = this.container.querySelector('.progress-bar');
             this.progressBarFill = this.container.querySelector('.progress-bar-fill');
@@ -614,6 +657,7 @@
         }
 
         addEventListeners() {
+            this.playOverlay.addEventListener('click', () => this.togglePlayPause());
             this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
             this.progressBar.addEventListener('click', (e) => this.seek(e));
             this.volumeBtn.addEventListener('click', () => this.toggleMute());
@@ -628,7 +672,6 @@
                 clearInterval(this.interval); 
             }
 
-            // Create YouTube player only if YT object is available
             if (typeof YT !== 'undefined' && YT.Player) {
                 this.player = new YT.Player(`Youtubeer-${this.container.id}`, {
                     videoId: this.videoId,
@@ -639,7 +682,9 @@
                         'showinfo': 0,
                         'enablejsapi': 1,
                         'html5': 1,
-                        'playsinline': 1 
+                        'playsinline': 1,
+                        'autohide': 1, // Auto-hide controls
+                        'wmode': 'opaque' // Important for z-index issues with controls
                     },
                     events: {
                         'onReady': this.onPlayerReady.bind(this),
@@ -648,40 +693,63 @@
                 });
             } else {
                 console.error("YouTube Iframe API (YT) is not loaded or not ready.");
-                // Optionally show a message to the user or a fallback image
                 this.container.querySelector('.youtube-iframe').innerHTML = `
-                    <div style="background: #333; color: #eee; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.2em;">
-                        Video unavailable. Please ensure you are viewing this page from a web server.
+                    <div style="background: #333; color: #eee; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.2em; padding: 20px;">
+                        Video unavailable. Please ensure this page is loaded from a web server (e.g., http://localhost) due to browser security policies.
                     </div>
                 `;
+                 this.playOverlay.style.display = 'none'; // Hide play overlay if video is unavailable
+                 this.playerControls.style.display = 'none'; // Hide controls
             }
         }
 
         onPlayerReady(event) {
             this.volumeSlider.value = event.target.getVolume();
             this.updateVolumeIcon();
+            this.container.classList.remove('buffered'); // Ensure no buffered class
+            this.container.classList.remove('playing'); // Ensure no playing class
+            // Optionally, auto-play only when ready if desired and allowed by browser
+            // event.target.playVideo();
         }
 
         onPlayerStateChange(event) {
             this.playerState = event.data;
+            this.container.classList.remove('playing', 'paused', 'ended', 'buffering', 'cued'); // Reset classes
+            
             if (event.data === YT.PlayerState.PLAYING) {
                 this.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
                 this.interval = setInterval(() => this.updateProgressBar(), 1000); 
-            } else {
+                this.container.classList.add('playing');
+            } else if (event.data === YT.PlayerState.PAUSED) {
                 this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
                 clearInterval(this.interval);
-            }
-            if (event.data === YT.PlayerState.ENDED) {
+                this.container.classList.add('paused');
+            } else if (event.data === YT.PlayerState.ENDED) {
                 this.progressBarFill.style.width = '0%';
                 this.player.seekTo(0); 
                 this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
+                clearInterval(this.interval);
+                this.container.classList.add('ended');
+            } else if (event.data === YT.PlayerState.BUFFERING) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; // Or a loading icon
+                this.container.classList.add('buffering');
+            } else if (event.data === YT.PlayerState.CUED) {
+                 this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                 this.container.classList.add('cued');
+            } else if (event.data === YT.PlayerState.UNSTARTED) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
             }
         }
 
         togglePlayPause() {
-            if (this.player && this.player.getPlayerState() === YT.PlayerState.PLAYING) {
+            if (!this.player) {
+                this.initializePlayer(); // Initialize player on first click if not already
+                return;
+            }
+
+            if (this.player.getPlayerState() === YT.PlayerState.PLAYING) {
                 this.player.pauseVideo();
-            } else if (this.player) {
+            } else {
                 this.player.playVideo();
             }
         }
@@ -735,7 +803,7 @@
             }
         }
 
-        updateVolumeIcon(volume = (this.player ? this.player.getVolume() : 100)) { // Default to 100 if player not ready
+        updateVolumeIcon(volume = (this.player ? this.player.getVolume() : 100)) { 
             if (volume === 0 || (this.player && this.player.isMuted())) {
                 this.volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
             } else if (volume < 50) {
@@ -768,6 +836,8 @@
             }
             clearInterval(this.interval); 
             this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
+            this.container.classList.remove('playing'); // Ensure playing class is removed
+            this.container.classList.add('cued'); // Set to cued state for next play
         }
     }
 
@@ -809,6 +879,8 @@
           card.classList.remove('active', 'left', 'right');
           if (index === current) {
             card.classList.add('active');
+            // Active hone par player ko initialize karo, lekin auto-play nahi
+            // Player will be initialized on first click
             playerInstancesArray[index].initializePlayer();
           } else if (index === current - 1) {
             card.classList.add('left');
@@ -861,4 +933,3 @@
   </script>
 </body>
 </html>
-
