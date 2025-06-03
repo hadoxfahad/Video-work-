@@ -169,7 +169,7 @@
     .gallery {
       position: relative;
       width: 100%;
-      max-width: 900px; /* Increased max-width for larger videos */
+      max-width: 900px; /* Increased max-width for overall gallery */
       margin: 0 auto;
       padding-bottom: 80px;
     }
@@ -191,10 +191,9 @@
 
     .cards li {
       position: absolute;
-      width: 400px; /* Increased width for larger videos */
-      height: 0;
-      padding-bottom: calc(400px * 9 / 16); /* 16:9 aspect ratio */
-      background: #000; /* Fallback background for player */
+      width: 600px; /* Default width for long-form videos on desktop */
+      padding-bottom: calc(600px * 9 / 16); /* 16:9 aspect ratio */
+      background: #000;
       border-radius: 15px;
       overflow: hidden;
       opacity: 0;
@@ -207,16 +206,9 @@
       align-items: center; /* Added for centering content */
       justify-content: center; /* Added for centering content */
     }
-    
-    /* Desktop adjustments for Long-Form Videos: Make them wider */
-    .cards:not(.shorts-cards) li { /* Selects only long-form videos */
-        width: 600px; /* Increased width for long-form videos on desktop */
-        padding-bottom: calc(600px * 9 / 16); /* Maintain 16:9 aspect ratio */
-    }
 
     .shorts-cards li {
-      width: 250px; /* Adjusted width for shorts */
-      height: 0;
+      width: 250px; /* Adjusted width for shorts on desktop */
       padding-bottom: calc(250px * 16 / 9); /* 9:16 aspect ratio for shorts */
     }
 
@@ -236,8 +228,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        /* Make iframe transparent to show controls on top */
-        opacity: 1; /* Keep it visible for interaction, controls overlay */
+        opacity: 1;
         z-index: 1; /* Ensure iframe is below controls but visible */
         border: none;
     }
@@ -258,7 +249,7 @@
         transition: opacity 0.3s ease;
         z-index: 5; /* Above the iframe */
     }
-    /* Add a play overlay for initial click if player is hidden or for better UX */
+    
     .play-overlay {
         position: absolute;
         top: 0;
@@ -279,17 +270,20 @@
         color: rgba(255, 255, 255, 0.8);
         text-shadow: 0 0 10px cyan;
     }
-    /* Hide overlay when player is active/playing */
+    
+    /* Hide overlay and show controls when video is playing/buffered */
     .custom-player-wrapper.playing .play-overlay,
     .custom-player-wrapper.buffered .play-overlay {
         opacity: 0;
-        pointer-events: none; /* Disable clicks on overlay */
+        pointer-events: none; 
     }
-
-
+    /* Controls should always be visible on hover, or if play state is active */
+    .custom-player-wrapper.playing .player-controls,
+    .custom-player-wrapper.paused .player-controls,
     .custom-player-wrapper:hover .player-controls {
         opacity: 1;
     }
+
 
     .player-controls .play-pause-btn,
     .player-controls .fullscreen-btn,
@@ -463,30 +457,37 @@
         min-height: 1.4em;
       }
       .gallery {
-        max-width: 100%; /* Full width on smaller screens */
+        max-width: 100%; 
       }
       .cards {
-        min-height: 300px; /* Adjusted for smaller screens */
-      }
-      .shorts-cards {
         min-height: 250px; /* Adjusted for smaller screens */
       }
+      .shorts-cards {
+        min-height: 200px; /* Adjusted for smaller screens */
+      }
 
-      /* Mobile adjustments for all videos: Full width, maintain aspect ratio */
-      .cards li {
-        width: 90%; /* On mobile, videos take up 90% width */
-        padding-bottom: calc(90% * 9 / 16); /* 16:9 for long form */
+      /* Mobile adjustments: Long videos smaller, shorts responsive */
+      .cards:not(.shorts-cards) li { /* Selects only long-form videos for mobile */
+        width: 90%; /* Mobile long videos take 90% width */
+        padding-bottom: calc(90% * 9 / 16); 
       }
       .shorts-cards li {
-        padding-bottom: calc(90% * 16 / 9); /* 9:16 for shorts */
+        width: 60%; /* Mobile shorts slightly smaller to fit vertical nature better */
+        padding-bottom: calc(60% * 16 / 9); 
       }
       
       /* Mobile translateX adjustments for cards to keep them visible */
-      .cards li.left, .shorts-cards li.left {
+      .cards li.left {
         transform: translateX(-100%) scale(0.8); 
       }
-      .cards li.right, .shorts-cards li.right {
+      .cards li.right {
         transform: translateX(100%) scale(0.8);
+      }
+      .shorts-cards li.left {
+        transform: translateX(-80%) scale(0.8); /* Adjusted for smaller shorts width */
+      }
+      .shorts-cards li.right {
+        transform: translateX(80%) scale(0.8); /* Adjusted for smaller shorts width */
       }
 
       .nav-buttons button {
@@ -683,8 +684,9 @@
                         'enablejsapi': 1,
                         'html5': 1,
                         'playsinline': 1,
-                        'autohide': 1, // Auto-hide controls
-                        'wmode': 'opaque' // Important for z-index issues with controls
+                        'autohide': 1, 
+                        'wmode': 'opaque', // Ensures controls are on top
+                        'origin': window.location.origin // Crucial for security in some environments
                     },
                     events: {
                         'onReady': this.onPlayerReady.bind(this),
@@ -695,26 +697,24 @@
                 console.error("YouTube Iframe API (YT) is not loaded or not ready.");
                 this.container.querySelector('.youtube-iframe').innerHTML = `
                     <div style="background: #333; color: #eee; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.2em; padding: 20px;">
-                        Video unavailable. Please ensure this page is loaded from a web server (e.g., http://localhost) due to browser security policies.
+                        वीडियो उपलब्ध नहीं. कृपया सुनिश्चित करें कि यह पेज वेब सर्वर (उदाहरण के लिए, http://localhost) से देखा जा रहा है, ब्राउज़र सुरक्षा नीतियों के कारण.
                     </div>
                 `;
-                 this.playOverlay.style.display = 'none'; // Hide play overlay if video is unavailable
-                 this.playerControls.style.display = 'none'; // Hide controls
+                 this.playOverlay.style.display = 'none'; 
+                 this.playerControls.style.display = 'none'; 
             }
         }
 
         onPlayerReady(event) {
             this.volumeSlider.value = event.target.getVolume();
             this.updateVolumeIcon();
-            this.container.classList.remove('buffered'); // Ensure no buffered class
-            this.container.classList.remove('playing'); // Ensure no playing class
-            // Optionally, auto-play only when ready if desired and allowed by browser
-            // event.target.playVideo();
+            this.container.classList.remove('buffered'); 
+            this.container.classList.remove('playing'); 
         }
 
         onPlayerStateChange(event) {
             this.playerState = event.data;
-            this.container.classList.remove('playing', 'paused', 'ended', 'buffering', 'cued'); // Reset classes
+            this.container.classList.remove('playing', 'paused', 'ended', 'buffering', 'cued'); 
             
             if (event.data === YT.PlayerState.PLAYING) {
                 this.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
@@ -731,7 +731,7 @@
                 clearInterval(this.interval);
                 this.container.classList.add('ended');
             } else if (event.data === YT.PlayerState.BUFFERING) {
-                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; // Or a loading icon
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
                 this.container.classList.add('buffering');
             } else if (event.data === YT.PlayerState.CUED) {
                  this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -742,8 +742,8 @@
         }
 
         togglePlayPause() {
-            if (!this.player) {
-                this.initializePlayer(); // Initialize player on first click if not already
+            if (!this.player || !this.player.playVideo) { // Check if player object and method exist
+                this.initializePlayer(); 
                 return;
             }
 
@@ -803,7 +803,7 @@
             }
         }
 
-        updateVolumeIcon(volume = (this.player ? this.player.getVolume() : 100)) { 
+        updateVolumeIcon(volume = (this.player && typeof this.player.getVolume === 'function' ? this.player.getVolume() : 100)) { 
             if (volume === 0 || (this.player && this.player.isMuted())) {
                 this.volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
             } else if (volume < 50) {
@@ -836,8 +836,8 @@
             }
             clearInterval(this.interval); 
             this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
-            this.container.classList.remove('playing'); // Ensure playing class is removed
-            this.container.classList.add('cued'); // Set to cued state for next play
+            this.container.classList.remove('playing'); 
+            this.container.classList.add('cued'); 
         }
     }
 
@@ -853,7 +853,7 @@
       playerInstancesArray.length = 0; 
 
       const isShorts = cardsList.classList.contains('shorts-cards');
-      const baseWidth = isShorts ? 250 : 400; 
+      // baseWidth ab CSS media queries se manage hoga
       const aspectRatioMultiplier = isShorts ? (16 / 9) : (9 / 16);
       const verticalPadding = 80;
 
@@ -879,8 +879,6 @@
           card.classList.remove('active', 'left', 'right');
           if (index === current) {
             card.classList.add('active');
-            // Active hone par player ko initialize karo, lekin auto-play nahi
-            // Player will be initialized on first click
             playerInstancesArray[index].initializePlayer();
           } else if (index === current - 1) {
             card.classList.add('left');
@@ -898,8 +896,9 @@
 
         const activeCard = cards[current];
         if (activeCard) {
-            const activeCardComputedHeight = activeCard.offsetWidth * aspectRatioMultiplier;
-            cardsList.style.height = `${activeCardComputedHeight + verticalPadding}px`;
+            // Recalculate height based on actual rendered width from CSS
+            const currentCardWidth = activeCard.offsetWidth; 
+            cardsList.style.height = `${(currentCardWidth * aspectRatioMultiplier) + verticalPadding}px`;
         }
       }
 
