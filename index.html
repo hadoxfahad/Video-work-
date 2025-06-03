@@ -1,1 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fahad | Video Editing Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Base Styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      font-family: 'Orbitron', sans-serif;
+      background: #0a0f1b;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* Particle Background */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -2;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Container */
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 120px auto 60px;
+      padding: 60px 0;
+      opacity: 0;
+      transform: translateY(50px);
+      animation: fadeInPage 1s ease-out forwards;
+    }
+
+    @keyframes fadeInPage {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Header */
+    .header-section {
+      text-align: center;
+      margin-bottom: 50px;
+      position: relative;
+    }
+    .header-section h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px cyan, 0 0 25px rgba(0, 255, 255, 0.5);
+      color: cyan;
+    }
+    .header-section .underline {
+      display: block;
+      width: 250px;
+      height: 4px;
+      background: cyan;
+      margin: 10px auto 0;
+      box-shadow: 0 0 10px cyan, 0 0 20px cyan;
+      border-radius: 50% 50% 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-section .underline::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: cyan;
+      border-radius: inherit;
+      animation: wave 3s ease-in-out infinite;
+      box-shadow: inherit;
+    }
+    @keyframes wave {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      25% { transform: translateX(-5px) scaleY(0.8); }
+      50% { transform: translateX(0) scaleY(1.2); }
+      75% { transform: translateX(5px) scaleY(0.9); }
+    }
+
+    /* Back Button */
+    .back-button {
+        position: fixed;
+        top: 30px;
+        left: 30px;
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 25px;
+        background: rgba(0, 255, 255, 0.15);
+        color: cyan;
+        border: 1px solid cyan;
+        border-radius: 10px;
+        text-decoration: none;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.1rem;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    }
+    .back-button i {
+        margin-right: 10px;
+    }
+    .back-button:hover {
+        background: cyan;
+        color: #0a0f1b;
+        box-shadow: 0 0 25px cyan;
+        transform: translateY(-5px);
+    }
+
+    /* Video Sections */
+    .video-section-content {
+        margin: 80px 0;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        backdrop-filter: blur(12px);
+        animation: slideUp 0.8s ease-out 0.3s both;
+    }
+
+    .video-section-content h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2rem;
+      text-shadow: 0 0 10px cyan;
+      color: cyan;
+    }
+
+    .video-section-content p {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 1.1rem;
+        color: #ccc;
+        line-height: 1.6;
+    }
+    
+    /* Dynamic heading */
+    .dynamic-video-heading {
+        font-size: 1.8rem;
+        text-align: center;
+        color: #99FFFF;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        text-shadow: 0 0 8px rgba(153, 255, 255, 0.5);
+        min-height: 1.8em;
+        transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Gallery */
+    .gallery {
+      position: relative;
+      width: 100%;
+      max-width: 900px; /* Increased max-width for overall gallery */
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: relative;
+      min-height: 450px; /* Increased min-height for larger videos */
+    }
+
+    .shorts-cards {
+      min-height: 400px; /* Adjusted for shorts */
+    }
+
+    .cards li {
+      position: absolute;
+      width: 600px; /* Default width for long-form videos on desktop */
+      padding-bottom: calc(600px * 9 / 16); /* 16:9 aspect ratio */
+      background: #000;
+      border-radius: 15px;
+      overflow: hidden;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      pointer-events: none;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      display: flex; /* Added for centering content */
+      align-items: center; /* Added for centering content */
+      justify-content: center; /* Added for centering content */
+    }
+
+    .shorts-cards li {
+      width: 250px; /* Adjusted width for shorts on desktop */
+      padding-bottom: calc(250px * 16 / 9); /* 9:16 aspect ratio for shorts */
+    }
+
+    /* Custom Player Styles */
+    .custom-player-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: #000; /* Fallback background for player */
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .youtube-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+        z-index: 1; /* Ensure iframe is below controls but visible */
+        border: none;
+    }
+
+    .player-controls {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #fff;
+        font-size: 0.9em;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 5; /* Above the iframe */
+    }
+    
+    .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10; /* Above controls too */
+        cursor: pointer;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+    .play-overlay i {
+        font-size: 4em;
+        color: rgba(255, 255, 255, 0.8);
+        text-shadow: 0 0 10px cyan;
+    }
+    
+    /* Hide overlay and show controls when video is playing/buffered/paused */
+    .custom-player-wrapper.playing .play-overlay,
+    .custom-player-wrapper.buffered .play-overlay,
+    .custom-player-wrapper.paused .play-overlay { /* Added .paused here */
+        opacity: 0;
+        pointer-events: none; 
+    }
+    
+    .custom-player-wrapper.playing .player-controls,
+    .custom-player-wrapper.paused .player-controls,
+    .custom-player-wrapper:hover .player-controls {
+        opacity: 1;
+    }
+
+
+    .player-controls .play-pause-btn,
+    .player-controls .fullscreen-btn,
+    .player-controls .volume-btn {
+        background: none;
+        border: none;
+        color: cyan;
+        font-size: 1.5em;
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s ease;
+    }
+
+    .player-controls .play-pause-btn:hover,
+    .player-controls .fullscreen-btn:hover,
+    .player-controls .volume-btn:hover {
+        color: #fff;
+    }
+
+    .player-controls .progress-bar {
+        flex-grow: 1;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        margin: 0 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .player-controls .progress-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: cyan;
+        border-radius: 4px;
+    }
+
+    .player-controls .volume-slider {
+        width: 80px;
+        height: 8px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        outline: none;
+        margin-left: 10px;
+    }
+
+    .player-controls .volume-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        background: cyan;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .player-controls .volume-slider::-moz-range-thumb {
+        width: 15px;
+        height: 15px;
+        background: cyan;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .cards li.active {
+      opacity: 1;
+      transform: scale(1);
+      z-index: 3;
+      pointer-events: auto;
+      box-shadow: 0 0 30px cyan;
+    }
+
+    /* Adjusted translateX for different video widths (Desktop) */
+    .cards li.left {
+      opacity: 0.6;
+      transform: translateX(-500px) scale(0.8); /* Adjusted for larger long videos */
+      z-index: 2;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+
+    .cards li.right {
+      opacity: 0.6;
+      transform: translateX(500px) scale(0.8); /* Adjusted for larger long videos */
+      z-index: 2;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+
+    .shorts-cards li.left {
+      transform: translateX(-220px) scale(0.8); /* Adjusted for shorts */
+    }
+
+    .shorts-cards li.right {
+      transform: translateX(320px) scale(0.8); /* Adjusted for shorts */
+    }
+
+    /* Navigation Buttons */
+    .nav-buttons {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding-top: 20px;
+    }
+
+    .nav-buttons button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      background-color: #2ecc71;
+      font-family: 'Orbitron', sans-serif;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+
+    .nav-buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 20px rgba(46, 204, 113, 0.8);
+    }
+
+    .nav-buttons button:active {
+      transform: translateY(1px);
+    }
+
+    .nav-buttons button#prev {
+      background-color: #555;
+      box-shadow: 0 0 10px rgba(85, 85, 85, 0.5);
+    }
+
+    .nav-buttons button#prev:hover {
+      box-shadow: 0 5px 20px rgba(85, 85, 85, 0.8);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        margin-top: 80px;
+        padding: 30px 0;
+      }
+      .header-section h1 {
+        font-size: 2.5rem;
+      }
+      .header-section .underline {
+        width: 200px;
+      }
+      .back-button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        top: 20px;
+        left: 20px;
+      }
+      .video-section-content {
+        margin: 50px 0;
+        padding: 25px;
+      }
+      .video-section-content h2 {
+        font-size: 1.5rem;
+      }
+      .video-section-content p {
+        font-size: 1rem;
+      }
+      .dynamic-video-heading {
+        font-size: 1.4rem;
+        min-height: 1.4em;
+      }
+      .gallery {
+        max-width: 100%; 
+      }
+      .cards {
+        min-height: 250px; /* Adjusted for smaller screens */
+      }
+      .shorts-cards {
+        min-height: 200px; /* Adjusted for smaller screens */
+      }
+
+      /* Mobile adjustments: Long videos smaller, shorts responsive */
+      .cards:not(.shorts-cards) li { /* Selects only long-form videos for mobile */
+        width: 90%; /* Mobile long videos take 90% width */
+        padding-bottom: calc(90% * 9 / 16); 
+      }
+      .shorts-cards li {
+        width: 60%; /* Mobile shorts slightly smaller to fit vertical nature better */
+        padding-bottom: calc(60% * 16 / 9); 
+      }
+      
+      /* Mobile translateX adjustments for cards to keep them visible */
+      .cards li.left {
+        transform: translateX(-100%) scale(0.8); 
+      }
+      .cards li.right {
+        transform: translateX(100%) scale(0.8);
+      }
+      .shorts-cards li.left {
+        transform: translateX(-80%) scale(0.8); /* Adjusted for smaller shorts width */
+      }
+      .shorts-cards li.right {
+        transform: translateX(80%) scale(0.8); /* Adjusted for smaller shorts width */
+      }
+
+      .nav-buttons button {
+        padding: 10px 18px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <a href="index.html" class="back-button">
+      <i class="fas fa-arrow-left"></i> Back to Portfolio
+  </a>
+
+  <div class="container">
+    <div class="header-section">
+      <h1>My Video Editing Work</h1>
+      <span class="underline"></span>
+      <p style="margin-top: 30px; font-size: 1.1rem; color: #aaa;">Explore my diverse range of video editing projects.</p>
+    </div>
+
+    <div class="video-section-content">
+      <h2>Short-Form Video Work</h2>
+      <p>Engaging short videos for social media.</p>
+ 
+      <div id="shorts-dynamic-heading" class="dynamic-video-heading"></div>
+      <div class="gallery" id="shorts-gallery">
+        <ul class="cards shorts-cards" id="shorts-cards"></ul>
+        <div class="nav-buttons">
+          <button id="shorts-prev">PREV</button>
+          <button id="shorts-next">NEXT</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-section-content">
+      <h2>Long-Form Video Work</h2>
+      <p>In-depth video projects.</p>
+    
+      <div id="longform-dynamic-heading" class="dynamic-video-heading"></div>
+      <div class="gallery" id="longform-gallery">
+        <ul class="cards" id="longform-cards"></ul>
+        <div class="nav-buttons">
+          <button id="longform-prev">PREV</button>
+          <button id="longform-next">NEXT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- YouTube Iframe Player API ko load karna ---
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api"; 
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // --- Video Data (EASIER TO EDIT) ---
+    const longformVideosData = [
+      { id: "eZqL2P5_4a4", heading: "Talking Ahead: Cinematic Intro (Sci-Fi)" },
+      { id: "M7lc1UVf-VE", heading: "Product Review: Tech Gadget Showcase" },
+      { id: "KxL9wB7rC9w", heading: "Travel Vlog: Mountain Expedition" },
+      { id: "LXb3EKWsInQ", heading: "Documentary Snippet: Wildlife in Action" },
+      { id: "2F61u_mRj_8", heading: "Gaming Montage: Epic Moments" }
+    ];
+    const shortsVideosData = [
+      { id: "Yykjyr_FkYg", heading: "Quick Tip: Video Editing Trick" },
+      { id: "D_mK_k9339Q", heading: "Behind the Scenes: VFX Breakdown" },
+      { id: "t_j5_j-f0_g", heading: "Daily Vlog: Challenge Fun" },
+      { id: "gXQ_b3k-o8E", heading: "Creative Transition: Smooth Reel" },
+      { id: "G4Vw2QzYxQ4", heading: "Satisfying Compilation: Art Process" }
+    ];
+
+    // --- Particle Background ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+    let particles = [];
+
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function createParticle(x, y) {
+      particles.push({
+        x, y,
+        alpha: 1,
+        radius: Math.random() * 3 + 1,
+        dx: Math.random() * 2 - 1,
+        dy: Math.random() * 2 - 1,
+        color: `hsla(${Math.random() * 60 + 180}, 100%, 50%, ${Math.random() * 0.5 + 0.3})`
+      });
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, w, h);
+      if (Math.random() < 0.2) {
+        createParticle(
+          Math.random() * w,
+          Math.random() * h
+        );
+      }
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        p.alpha -= 0.003;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          i--;
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    }
+
+    // --- Custom YouTube Player Class ---
+    class CustomYouTubePlayer {
+        constructor(containerId, videoId, isShorts = false) {
+            this.container = document.getElementById(containerId);
+            this.videoId = videoId;
+            this.isShorts = isShorts;
+            this.player = null; 
+            this.playerState = -1; 
+            this.interval = null; 
+            this.volumeBeforeMute = 100; 
+
+            this.createPlayerHTML();
+            this.getControlsElements();
+            this.addEventListeners();
+        }
+
+        createPlayerHTML() {
+            this.container.innerHTML = `
+                <div id="youtube-player-${this.container.id}" class="youtube-iframe"></div>
+                <div class="play-overlay"><i class="fas fa-play"></i></div>
+                <div class="player-controls">
+                    <button class="play-pause-btn"><i class="fas fa-play"></i></button>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                    <button class="volume-btn"><i class="fas fa-volume-up"></i></button>
+                    <input type="range" class="volume-slider" min="0" max="100" value="100">
+                    <button class="fullscreen-btn"><i class="fas fa-expand"></i></button>
+                </div>
+            `;
+        }
+
+        getControlsElements() {
+            this.youtubeIframeDiv = this.container.querySelector('.youtube-iframe');
+            this.playOverlay = this.container.querySelector('.play-overlay');
+            this.playerControls = this.container.querySelector('.player-controls');
+            this.playPauseBtn = this.container.querySelector('.play-pause-btn');
+            this.progressBar = this.container.querySelector('.progress-bar');
+            this.progressBarFill = this.container.querySelector('.progress-bar-fill');
+            this.volumeBtn = this.container.querySelector('.volume-btn');
+            this.volumeSlider = this.container.querySelector('.volume-slider');
+            this.fullscreenBtn = this.container.querySelector('.fullscreen-btn');
+        }
+
+        addEventListeners() {
+            this.playOverlay.addEventListener('click', () => this.togglePlayPause());
+            this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+            this.progressBar.addEventListener('click', (e) => this.seek(e));
+            this.volumeBtn.addEventListener('click', () => this.toggleMute());
+            this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
+            this.fullscreenBtn.addEventListener('click', () => this.toggleFullScreen());
+        }
+
+        initializePlayer() {
+            if (this.player) {
+                this.player.destroy();
+                this.player = null;
+                clearInterval(this.interval); 
+            }
+
+            // Check if the YouTube API is loaded AND the target div exists
+            if (typeof YT !== 'undefined' && YT.Player && this.youtubeIframeDiv) {
+                this.player = new YT.Player(`Youtubeer-${this.container.id}`, {
+                    videoId: this.videoId,
+                    playerVars: {
+                        'controls': 0, 
+                        'modestbranding': 1,
+                        'rel': 0,
+                        'showinfo': 0,
+                        'enablejsapi': 1,
+                        'html5': 1,
+                        'playsinline': 1,
+                        'autohide': 1, 
+                        'wmode': 'opaque', // Ensures controls are on top
+                        'origin': window.location.origin // Crucial for security in some environments
+                    },
+                    events: {
+                        'onReady': this.onPlayerReady.bind(this),
+                        'onStateChange': this.onPlayerStateChange.bind(this)
+                    }
+                });
+            } else {
+                console.error(`YouTube Iframe API (YT) is not loaded or the player div #youtube-player-${this.container.id} does not exist.`);
+                this.container.querySelector('.youtube-iframe').innerHTML = `
+                    <div style="background: #333; color: #eee; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.2em; padding: 20px;">
+                        वीडियो उपलब्ध नहीं. कृपया सुनिश्चित करें कि यह पेज वेब सर्वर से देखा जा रहा है और YouTube API लोड हो रहा है.
+                    </div>
+                `;
+                 this.playOverlay.style.display = 'none'; 
+                 this.playerControls.style.display = 'none'; 
+            }
+        }
+
+        onPlayerReady(event) {
+            // Volume ko sirf player ready hone ke baad hi set karein
+            if (typeof event.target.getVolume === 'function') {
+                this.volumeSlider.value = event.target.getVolume();
+            } else {
+                 this.volumeSlider.value = 100; // Fallback
+            }
+            this.updateVolumeIcon();
+            this.container.classList.remove('buffered'); 
+            this.container.classList.remove('playing'); 
+            // Optional: Auto-play if allowed by browser and user interaction is present
+            // event.target.playVideo(); 
+        }
+
+        onPlayerStateChange(event) {
+            this.playerState = event.data;
+            this.container.classList.remove('playing', 'paused', 'ended', 'buffering', 'cued', 'unstarted'); // All states
+
+            if (event.data === YT.PlayerState.PLAYING) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                this.interval = setInterval(() => this.updateProgressBar(), 1000); 
+                this.container.classList.add('playing');
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                clearInterval(this.interval);
+                this.container.classList.add('paused');
+            } else if (event.data === YT.PlayerState.ENDED) {
+                this.progressBarFill.style.width = '0%';
+                this.player.seekTo(0); 
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
+                clearInterval(this.interval);
+                this.container.classList.add('ended');
+            } else if (event.data === YT.PlayerState.BUFFERING) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
+                this.container.classList.add('buffering');
+            } else if (event.data === YT.PlayerState.CUED) {
+                 this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                 this.container.classList.add('cued');
+            } else if (event.data === YT.PlayerState.UNSTARTED) {
+                this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                this.container.classList.add('unstarted'); // Add unstarted state
+            }
+        }
+
+        togglePlayPause() {
+            if (!this.player || typeof this.player.playVideo !== 'function') { 
+                this.initializePlayer(); 
+                return; // Wait for player to be ready
+            }
+
+            if (this.player.getPlayerState() === YT.PlayerState.PLAYING) {
+                this.player.pauseVideo();
+            } else {
+                this.player.playVideo();
+            }
+        }
+
+        updateProgressBar() {
+            if (this.player && typeof this.player.getCurrentTime === 'function' && typeof this.player.getDuration === 'function') {
+                const currentTime = this.player.getCurrentTime();
+                const duration = this.player.getDuration();
+                if (duration > 0) {
+                    const progress = (currentTime / duration) * 100;
+                    this.progressBarFill.style.width = `${progress}%`;
+                }
+            }
+        }
+
+        seek(e) {
+            if (this.player && typeof this.player.getDuration === 'function' && typeof this.player.seekTo === 'function') {
+                const progressBarRect = this.progressBar.getBoundingClientRect();
+                const clickX = e.clientX - progressBarRect.left;
+                const percentage = clickX / progressBarRect.width;
+                const duration = this.player.getDuration();
+                const newTime = duration * percentage;
+                this.player.seekTo(newTime, true);
+            }
+        }
+
+        toggleMute() {
+            if (this.player && typeof this.player.isMuted === 'function') {
+                if (this.player.isMuted()) {
+                    this.player.unMute();
+                    if (typeof this.player.setVolume === 'function') this.player.setVolume(this.volumeBeforeMute); 
+                    this.volumeSlider.value = this.volumeBeforeMute;
+                    this.updateVolumeIcon(this.volumeBeforeMute);
+                } else {
+                    if (typeof this.player.getVolume === 'function') this.volumeBeforeMute = this.player.getVolume(); 
+                    this.player.mute();
+                    this.volumeSlider.value = 0;
+                    this.updateVolumeIcon(0); 
+                }
+            }
+        }
+
+        setVolume(volume) {
+            if (this.player && typeof this.player.setVolume === 'function') {
+                this.player.setVolume(volume);
+                this.updateVolumeIcon(volume);
+                if (volume > 0 && this.player.isMuted()) {
+                    this.player.unMute(); 
+                }
+                this.volumeBeforeMute = volume; 
+            }
+        }
+
+        updateVolumeIcon(volume = (this.player && typeof this.player.getVolume === 'function' ? this.player.getVolume() : 100)) { 
+            if (volume === 0 || (this.player && typeof this.player.isMuted === 'function' && this.player.isMuted())) {
+                this.volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else if (volume < 50) {
+                this.volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                this.volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+
+        toggleFullScreen() {
+            const wrapper = this.container.closest('li'); 
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                if (wrapper.requestFullscreen) {
+                    wrapper.requestFullscreen();
+                } else if (wrapper.mozRequestFullScreen) {
+                    wrapper.mozRequestFullScreen();
+                } else if (wrapper.webkitRequestFullscreen) {
+                    wrapper.webkitRequestFullscreen();
+                } else if (wrapper.msRequestFullscreen) {
+                    wrapper.msRequestFullscreen();
+                }
+            }
+        }
+
+        pause() {
+            if (this.player && typeof this.player.pauseVideo === 'function' && this.playerState === YT.PlayerState.PLAYING) {
+                this.player.pauseVideo();
+            }
+            clearInterval(this.interval); 
+            this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; 
+            this.container.classList.remove('playing'); 
+            this.container.classList.add('cued'); 
+        }
+    }
+
+
+    // --- Carousel Functionality ---
+    let shortsPlayers = [];
+    let longformPlayers = [];
+
+    function setupCarousel(videoDataArray, cardsListId, prevBtnId, nextBtnId, dynamicHeadingId, playerInstancesArray) {
+      const cardsList = document.getElementById(cardsListId);
+      const dynamicHeadingElement = document.getElementById(dynamicHeadingId);
+      cardsList.innerHTML = '';
+      playerInstancesArray.length = 0; 
+
+      const isShorts = cardsList.classList.contains('shorts-cards');
+      const aspectRatioMultiplier = isShorts ? (16 / 9) : (9 / 16);
+      const verticalPadding = 80;
+
+      videoDataArray.forEach((data, index) => {
+            const li = document.createElement("li");
+            const playerContainerId = `${cardsListId}-player-${index}`;
+            li.innerHTML = `<div class="custom-player-wrapper" id="${playerContainerId}"></div>`;
+            cardsList.appendChild(li);
+
+            const player = new CustomYouTubePlayer(playerContainerId, data.id, isShorts);
+            playerInstancesArray.push(player);
+
+            setTimeout(() => {
+                li.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            }, index * 100);
+        });
+
+      const cards = cardsList.querySelectorAll('li');
+      let current = 0;
+
+      function updateCarousel() {
+        cards.forEach((card, index) => {
+          card.classList.remove('active', 'left', 'right');
+          if (index === current) {
+            card.classList.add('active');
+            // initializePlayer will check for YT and create player
+            playerInstancesArray[index].initializePlayer(); 
+          } else if (index === current - 1) {
+            card.classList.add('left');
+            playerInstancesArray[index].pause();
+          } else if (index === current + 1) {
+            card.classList.add('right');
+            playerInstancesArray[index].pause();
+          } else {
+            playerInstancesArray[index].pause();
+          }
+        });
+        if (dynamicHeadingElement && videoDataArray[current]) {
+          dynamicHeadingElement.textContent = videoDataArray[current].heading;
+        }
+
+        const activeCard = cards[current];
+        if (activeCard) {
+            // Recalculate height based on actual rendered width from CSS
+            const currentCardWidth = activeCard.offsetWidth; 
+            cardsList.style.height = `${(currentCardWidth * aspectRatioMultiplier) + verticalPadding}px`;
+        }
+      }
+
+      document.getElementById(prevBtnId).addEventListener('click', () => {
+        if (current > 0) current--;
+        updateCarousel();
+      });
+      document.getElementById(nextBtnId).addEventListener('click', () => {
+        if (current < cards.length - 1) current++;
+        updateCarousel();
+      });
+      updateCarousel(); 
+    }
+
+    // YouTube API ready hone par carousels ko initialize karein
+    function onYouTubeIframeAPIReady() {
+        setupCarousel(shortsVideosData, 'shorts-cards', 'shorts-prev', 'shorts-next', 'shorts-dynamic-heading', shortsPlayers);
+        setupCarousel(longformVideosData, 'longform-cards', 'longform-prev', 'longform-next', 'longform-dynamic-heading', longformPlayers);
+    }
+
+    // --- Initialize ---
+    window.addEventListener('load', () => {
+      animateParticles();
+      for (let i = 0; i < 100; i++) {
+        createParticle(
+          Math.random() * w,
+          Math.random() * h
+        );
+      }
+    });
+  </script>
+</body>
+</html>
 
